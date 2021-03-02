@@ -3,7 +3,7 @@
 # SUPPORTED MODES  : opt, debug [default=debug]
 # SUPPORTED PRECISIONS (PREC) : single, double [default=double]
 #----------------------------------------------------------------------
-COMPILE = "gnu"
+COMPILE = "nvfortran"
 MODE    = "opt"
 PREC    = "double"
 #----------------------------------------------------------------------
@@ -41,6 +41,17 @@ ifeq (${COMPILE},"pgi-cuda") # mpif90 shipped with PGI compiler
     endif
 endif
 
+# singularity build nvhpc_21.1_devel.sif docker://nvcr.io/nvidia/nvhpc:21.1-devel-cuda_multi-ubuntu20.04
+# singularity shell --nv nvhpc_21.1_devel.sif
+ifeq (${COMPILE},"nvfortran") # mpif90 shipped with PGI compiler
+    FC = mpifort # precompiled mpifort included with nvidia hpc
+    ifeq (${MODE},"opt") 
+        OLEVEL = -O3 -Mcuda=ccall,cuda11.2 -DUSE_CUDA -DCUDA_ASYNC #-DNOCUDAAWAREMPI
+    else
+        OLEVEL = -O2 -Mcuda=ccall,cuda11.2 -DUSE_CUDA -DCUDA_ASYNC #-DNOCUDAAWAREMPI
+    endif
+endif
+
 ifeq (${COMPILE},"pgi-cuda-sync") # mpif90 shipped with PGI compiler
     FC = mpipgifort #mpif90 
     ifeq (${MODE},"opt") 
@@ -72,7 +83,7 @@ endif
 ifeq (${COMPILE},"gnu") # mpif90 from MPI library
     FC = mpif90 
     ifeq (${MODE},"opt") 
-        OLEVEL = -O3
+        OLEVEL = -O3 #-fno-inline-functions -fno-underscoring
     else
         OLEVEL = -O2 -fbounds-check -g -fbacktrace -fdump-core -ffpe-trap=zero,invalid,overflow
         #OLEVEL = -O2 -fbounds-check -g -fbacktrace -fdump-core
