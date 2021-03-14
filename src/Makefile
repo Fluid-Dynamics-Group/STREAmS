@@ -4,6 +4,7 @@
 # SUPPORTED PRECISIONS (PREC) : single, double [default=double]
 #----------------------------------------------------------------------
 COMPILE = "nvfortran"
+#COMPILE = "gnu"
 MODE    = "opt"
 PREC    = "double"
 #----------------------------------------------------------------------
@@ -81,7 +82,7 @@ ifeq (${COMPILE},"intel") # mpiifort from IntelMPI
 endif
 
 ifeq (${COMPILE},"gnu") # mpif90 from MPI library
-    FC = mpif90 
+    FC = /usr/bin/mpif90 
     ifeq (${MODE},"opt") 
         OLEVEL = -O3 #-fno-inline-functions -fno-underscoring
     else
@@ -113,7 +114,8 @@ OBJ_FILES = alloc.o bcdf.o bcextr.o bcfree.o bc.o bcrelax.o bcshk.o bcswap.o \
     prims.o printres.o readdf.o readgrid.o readinp.o readrst.o readstat.o rk.o sensor.o \
     setup.o solver.o startmpi.o stats.o step.o target_reystress.o tbforce.o updateghost.o utility.o \
     visflx.o writedf.o writefield.o writefieldvtk.o writegridplot3d.o writerst.o \
-    writestatbl.o writestatchann.o writestat.o writestatzbl.o write_wallpressure.o
+    writestatbl.o writestatchann.o writestat.o writestatzbl.o write_wallpressure.o \
+	write_probe_data.o
 
 OBJ_MODS = mod_streams.o mod_sys.o euler.o
 OBJS = $(OBJ_MODS) $(OBJ_FILES) $(MAIN)

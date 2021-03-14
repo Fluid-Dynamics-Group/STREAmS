@@ -30,6 +30,7 @@ subroutine solver
  endif
 !
  open(20,file='output_streams.dat',position=stat_io)
+
  startTiming = mpi_wtime()
 !
  stop_streams = .false.
@@ -55,6 +56,7 @@ subroutine solver
   call mpi_barrier(mpi_comm_world,iermpi)
   if (stop_streams) exit
 !
+    call write_probe_data
  enddo
 !
  endTiming = mpi_wtime()
