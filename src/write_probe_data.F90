@@ -20,7 +20,7 @@ subroutine to_file(input_filename, i,j)
         vwrite = rhov / rho
         wwrite = rhow / rho
 
-        write(21, *) rho, ",", uwrite, ",", vwrite, ",", wwrite
+        write(21, "(E15.10, A1, E15.10, A1, E15.10, A1, E15.10)") rho, ",", uwrite, ",", vwrite, ",", wwrite
     enddo
 
     close(21)
