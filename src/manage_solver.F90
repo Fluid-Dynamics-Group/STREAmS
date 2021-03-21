@@ -30,6 +30,8 @@ subroutine manage_solver
    call stats2d()
   endif
  endif
+
+ call write_probe_data
 !
 !Writing fields
  if (savefield) then
@@ -56,6 +58,7 @@ subroutine manage_solver
   endif
   istore_restart = istore_restart+1
  endif
+
 !
  if (updatestat.or.savefield.or.saverst) then
   call reset_cpu_gpu()

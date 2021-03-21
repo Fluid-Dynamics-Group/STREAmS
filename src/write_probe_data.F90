@@ -11,10 +11,10 @@ subroutine to_file(input_filename, i,j)
     write(21, *) "rho, u, v, w"
 
     do k = 1, nz
-        rho = w_gpu(i,j,k,1)
-        rhou = w_gpu(i,j,k,1)
-        rhov = w_gpu(i,j,k,1)
-        rhow = w_gpu(i,j,k,1)
+        rho = w(i,j,k,1)
+        rhou = w(i,j,k,2)
+        rhov = w(i,j,k,3)
+        rhow = w(i,j,k,4)
 
         uwrite = rhou / rho
         vwrite = rhov / rho
@@ -58,3 +58,27 @@ subroutine write_probe_data()
 
 end subroutine write_probe_data
 
+
+subroutine init_write_telaps()
+    use mod_streams
+    implicit none
+
+    if (masterproc) then
+        open(995, file="timesteps.csv", action="write", status="replace")
+        write(995, *) "telaps"
+    endif
+
+end subroutine init_write_telaps
+
+subroutine write_telaps(telaps_in)
+    use mod_streams
+    use mod_sys
+    implicit none
+
+    real(mykind) :: telaps_in
+
+    if (masterproc) then
+        open(995, file="timesteps.csv", action="write", position="append")
+        write(995, "(E15.10, A1)") telaps_in, ","
+    endif
+end subroutine write_telaps

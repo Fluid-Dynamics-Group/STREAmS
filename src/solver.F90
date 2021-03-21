@@ -15,6 +15,7 @@ subroutine solver
 !
 !Copy arrays from CPU to GPU or move alloc
  call copy_cpu_to_gpu()
+
 !
  if (masterproc) write(*,*) 'Compute time step'
  dtmin = abs(cfl)
@@ -34,11 +35,17 @@ subroutine solver
  startTiming = mpi_wtime()
 !
  stop_streams = .false.
+
+! init file for writing the time steps to a file 
+ call init_write_telaps()
+
  do i=1,ncyc
 !
   icyc = icyc+1
 !
   call rk() ! Third-order RK scheme
+ ! write the probe dtata before any reset occurs
+
 !
   if (io_type>0) call manage_solver()
 !
@@ -56,7 +63,6 @@ subroutine solver
   call mpi_barrier(mpi_comm_world,iermpi)
   if (stop_streams) exit
 !
-    call write_probe_data
  enddo
 !
  endTiming = mpi_wtime()
