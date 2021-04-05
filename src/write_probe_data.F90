@@ -1,17 +1,18 @@
-subroutine to_file(input_filename, i,j)
+subroutine to_file(input_filename, input_filename_2, i,j)
     use mod_streams
     use mod_sys
     implicit none
-    character(len=50) :: input_filename
+    character(len=50) :: input_filename , input_filename_2
 
     integer :: i, j, k
     real(mykind) :: rho, rhou, rhov, rhow, vwrite, uwrite, wwrite
 
     open(21,file=input_filename)
+    open(22,file=input_filename_2)
     write(21, *) "rho, u, v, w"
 
     do k = 1, nz
-        rho = w(i,j,k,1)
+        rho =  w(i,j,k,1)
         rhou = w(i,j,k,2)
         rhov = w(i,j,k,3)
         rhow = w(i,j,k,4)
@@ -21,6 +22,16 @@ subroutine to_file(input_filename, i,j)
         wwrite = rhow / rho
 
         write(21, "(E15.10, A1, E15.10, A1, E15.10, A1, E15.10)") rho, ",", uwrite, ",", vwrite, ",", wwrite
+
+        rho =  w_gpu(i,j,k,1)
+        rhou = w_gpu(i,j,k,2)
+        rhov = w_gpu(i,j,k,3)
+        rhow = w_gpu(i,j,k,4)
+
+        uwrite = rhou / rho
+        vwrite = rhov / rho
+        wwrite = rhow / rho
+        write(22, "(E15.10, A1, E15.10, A1, E15.10, A1, E15.10)") rho, ",", uwrite, ",", vwrite, ",", wwrite
     enddo
 
     close(21)
@@ -33,27 +44,31 @@ subroutine write_probe_data()
     implicit none
     integer :: i, j, k, dead
     character(len=50) :: filename
+    character(len=50) :: filename2
 
     ! if we are the main thread
     if (masterproc) then
         ! write probe data 1/4th in the x direction and half in y direction
-        write(filename, "(A22, I5.5, A4)") "csv_data/probe_data_1_", icyc, ".csv"
+        write(filename, "(A22, I5.5, A4)") "csv_data/w_probe_data_1_", icyc, ".csv"
+        write(filename2, "(A22, I5.5, A4)") "csv_data/w_gpu_probe_data_1_", icyc, ".csv"
         i = nx *1/4
         j = ny / 2
         !print *, filename
-        call to_file(filename, i, j)
+        call to_file(filename, filename2, i, j)
 
         ! write probe data 1/2 in the x direction and half in y direction
-        write(filename, "(A22, I5.5, A4)") "csv_data/probe_data_2_", icyc, ".csv"
+        write(filename, "(A22, I5.5, A4)") "csv_data/w_probe_data_2_", icyc, ".csv"
+        write(filename2, "(A22, I5.5, A4)") "csv_data/w_gpu_probe_data_2_", icyc, ".csv"
         i = nx*2/4
         !print *, filename
-        call to_file(filename, i, j)
+        call to_file(filename, filename2, i, j)
 
         ! write probe data 3/4 in the x direction and half in y direction
-        write(filename, "(A22, I5.5, A4)") "csv_data/probe_data_3_", icyc, ".csv"
+        write(filename, "(A22, I5.5, A4)") "csv_data/w_probe_data_3_", icyc, ".csv"
+        write(filename2, "(A22, I5.5, A4)") "csv_data/w_gpu_probe_data_3_", icyc, ".csv"
         i = nx*3/4
         !print *, filename
-        call to_file(filename, i, j)
+        call to_file(filename, filename2, i, j)
     endif
 
 end subroutine write_probe_data

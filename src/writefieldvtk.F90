@@ -31,7 +31,7 @@ subroutine writefieldvtk
  write(nastore,1004) istore
  1004 format(I4.4)
 
- filename = 'field_'//nastore//'.vtr'
+ filename = 'field_'//nastore//'.vtk'
 
  call MPI_TYPE_SIZE(mpi_prec,size_real,iermpi)
  if(size_real == 4) then

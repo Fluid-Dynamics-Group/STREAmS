@@ -22,11 +22,11 @@ subroutine write_wallpressure
   !$cuf kernel do(2) <<<*,*>>> 
   do k=1,nz,k_skip_p
    do i=1,nx,i_skip_p
-    rho  = w_gpu(i,1,k,1)
-    rhou = w_gpu(i,1,k,2)
-    rhov = w_gpu(i,1,k,3)
-    rhow = w_gpu(i,1,k,4)
-    rhoe = w_gpu(i,1,k,5)
+    rho  = w_gpu(i,j,k,1)
+    rhou = w_gpu(i,j,k,2)
+    rhov = w_gpu(i,j,k,3)
+    rhow = w_gpu(i,j,k,4)
+    rhoe = w_gpu(i,j,k,5)
     ri   = 1._mykind/rho
     uu   = rhou*ri
     vv   = rhov*ri
