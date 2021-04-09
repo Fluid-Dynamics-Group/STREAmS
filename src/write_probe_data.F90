@@ -2,7 +2,7 @@ subroutine to_file(input_filename, input_filename_2, i,j)
     use mod_streams
     use mod_sys
     implicit none
-    character(len=50) :: input_filename , input_filename_2
+    character(len=70) :: input_filename , input_filename_2
 
     integer :: i, j, k
     real(mykind) :: rho, rhou, rhov, rhow, vwrite, uwrite, wwrite
@@ -43,29 +43,28 @@ subroutine write_probe_data()
 
     implicit none
     integer :: i, j, k, dead
-    character(len=50) :: filename
-    character(len=50) :: filename2
+    character(len=70) :: filename, filename2
 
     ! if we are the main thread
     if (masterproc) then
         ! write probe data 1/4th in the x direction and half in y direction
-        write(filename, "(A22, I5.5, A4)") "csv_data/w_probe_data_1_", icyc, ".csv"
-        write(filename2, "(A22, I5.5, A4)") "csv_data/w_gpu_probe_data_1_", icyc, ".csv"
+        write(filename, "(A24, I5.5, A4)") "csv_data/w_probe_data_1_", icyc, ".csv"
+        write(filename2, "(A28, I5.5, A4)") "csv_data/w_gpu_probe_data_1_", icyc, ".csv"
         i = nx *1/4
         j = ny / 2
         !print *, filename
         call to_file(filename, filename2, i, j)
 
         ! write probe data 1/2 in the x direction and half in y direction
-        write(filename, "(A22, I5.5, A4)") "csv_data/w_probe_data_2_", icyc, ".csv"
-        write(filename2, "(A22, I5.5, A4)") "csv_data/w_gpu_probe_data_2_", icyc, ".csv"
+        write(filename, "(A24, I5.5, A4)") "csv_data/w_probe_data_2_", icyc, ".csv"
+        write(filename2, "(A28, I5.5, A4)") "csv_data/w_gpu_probe_data_2_", icyc, ".csv"
         i = nx*2/4
         !print *, filename
         call to_file(filename, filename2, i, j)
 
         ! write probe data 3/4 in the x direction and half in y direction
-        write(filename, "(A22, I5.5, A4)") "csv_data/w_probe_data_3_", icyc, ".csv"
-        write(filename2, "(A22, I5.5, A4)") "csv_data/w_gpu_probe_data_3_", icyc, ".csv"
+        write(filename, "(A24, I5.5, A4)") "csv_data/w_probe_data_3_", icyc, ".csv"
+        write(filename2, "(A28, I5.5, A4)") "csv_data/w_gpu_probe_data_3_", icyc, ".csv"
         i = nx*3/4
         !print *, filename
         call to_file(filename, filename2, i, j)
