@@ -24,6 +24,14 @@ subroutine bc(inr)
 ! inr = 0 -> steady-type    boundary conditions
 ! inr = 1 -> non-reflecting boundary conditions
 !
+
+! FOR SHOCK BL CASE:
+! surface 1 = 9 digitial filtering
+! surface 2 = 4 nonreflecting
+! surface 3 = 8 wall (PL type)
+! surface 4 = 7 oblique shock imposed
+! 5/6 are = 0 ?
+
   if (inr==0) then 
 !
 !  Steady-type BCs
@@ -32,7 +40,9 @@ subroutine bc(inr)
 !
    do ilat=1,2*ndim ! loop on all sides of the boundary (3D -> 6, 2D -> 4)
     if (ibc(ilat)==1) call bcfree(ilat)
-    if (ibc(ilat)==2) call bcextr(ilat)
+    ! types 2 and 4 share the same boundary condition subroutine even though they 
+    ! have different names?
+    if (ibc(ilat)==2) call bcextr(ilat) 
     if (ibc(ilat)==4) call bcextr(ilat)
     if (ibc(ilat)==5) call bcwall_staggered(ilat)
     if (ibc(ilat)==6) call bcwall(ilat)

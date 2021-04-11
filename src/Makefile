@@ -3,8 +3,8 @@
 # SUPPORTED MODES  : opt, debug [default=debug]
 # SUPPORTED PRECISIONS (PREC) : single, double [default=double]
 #----------------------------------------------------------------------
-COMPILE = "nvfortran"
-#COMPILE = "gnu"
+#COMPILE = "nvfortran"
+COMPILE = "gnu"
 MODE    = "opt"
 PREC    = "double"
 #----------------------------------------------------------------------
@@ -48,7 +48,6 @@ ifeq (${COMPILE},"nvfortran") # mpif90 shipped with PGI compiler
 	#FC = mpifort # precompiled mpifort included with nvidia hpc
     FC = mpif90
     ifeq (${MODE},"opt") 
-        #OLEVEL = -O3 -Mcuda=ccall,cuda11.2 -DUSE_CUDA -DCUDA_ASYNC -Mcuda=11.2
         OLEVEL = -O3 -Mcuda=cuda11.2 -DUSE_CUDA -DCUDA_ASYNC 
     else
         OLEVEL = -O2 -Mcuda=ccall,cuda11.2 -DUSE_CUDA -DCUDA_ASYNC #-DNOCUDAAWAREMPI

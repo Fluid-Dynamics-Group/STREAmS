@@ -21,7 +21,7 @@ subroutine to_file(input_filename, input_filename_2, i,j)
         vwrite = rhov / rho
         wwrite = rhow / rho
 
-        write(21, "(E15.10, A1, E15.10, A1, E15.10, A1, E15.10)") rho, ",", uwrite, ",", vwrite, ",", wwrite
+        write(21, "(E25.20, A1, E25.20, A1, E25.20, A1, E25.20)") rho, ",", uwrite, ",", vwrite, ",", wwrite
 
         rho =  w_gpu(i,j,k,1)
         rhou = w_gpu(i,j,k,2)
@@ -31,7 +31,7 @@ subroutine to_file(input_filename, input_filename_2, i,j)
         uwrite = rhou / rho
         vwrite = rhov / rho
         wwrite = rhow / rho
-        write(22, "(E15.10, A1, E15.10, A1, E15.10, A1, E15.10)") rho, ",", uwrite, ",", vwrite, ",", wwrite
+        write(22, "(E25.20, A1, E25.20, A1, E25.20, A1, E25.20)") rho, ",", uwrite, ",", vwrite, ",", wwrite
     enddo
 
     close(21)

@@ -19,12 +19,16 @@ subroutine bcextr(ilat)
    enddo
   enddo
  !@cuf iercuda=cudaDeviceSynchronize()
+
+ ! >> this is the one called for SBLI
  elseif (ilat==2) then ! right side
  !$cuf kernel do(2) <<<*,*>>>
   do k=1,nz
    do j=1,ny
     do l=1,ng
      do m=1,nv
+      ! i think this sets all of the values of the ghost nodes to the current value 
+      ! at the wall
       w_gpu(nx+l,j,k,m) = w_gpu(nx,j,k,m)
      enddo
     enddo
