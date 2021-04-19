@@ -35,7 +35,7 @@ subroutine to_file(input_filename, input_filename_2, i,j)
     enddo
 
     close(21)
-end subroutine to_file 
+end subroutine to_file
 
 subroutine write_probe_data()
     use mod_streams
@@ -96,3 +96,68 @@ subroutine write_telaps(telaps_in)
         write(995, "(E15.10, A1)") telaps_in, ","
     endif
 end subroutine write_telaps
+
+! average out all of the values in a span for the vector of conservative variables w
+subroutine write_span_averaged
+    use mod_streams
+    use mod_sys
+
+    ! local variables
+    character(len=5) :: current_cycle
+    character(len=70) :: current_filename
+
+    if (masterproc) then
+        ! works for icyc < 99,999 iterations
+        write(current_cycle, "(I5)") icyc
+
+        current_filename = "span_average_"//current_cycle//"_rho.dat"
+        call helper_write_span_averaged(current_filename, 1)
+    endif
+
+end subroutine write_span_averaged
+
+! A helper to average out the values on each of the spans for different variables
+! Called from the write_span_averaged subroutine with the name of the file to write to
+! and the slice of the variable that we are averaging
+subroutine helper_write_span_averaged(filename, slice_var)
+    use mod_streams
+    use mod_sys
+
+    ! arguments
+    integer:: slice_var
+    character(len=70) :: filename
+
+    ! local variables
+    real(8), dimension(:,:), allocatable :: span_average
+    real(8) :: current_average
+
+    do i = 1,nx
+        do j = 1, ny
+            current_average = 0.0
+
+            ! sum up all of the values on the z axis
+            do k = 1, nz
+                ! hopefully the compiler can inline each of these branches in the hot loop
+                ! otherwise this is painfully slow
+                if (slice_var == 1) then
+                    ! if we are dealing with rho
+                    current_average = current_average + w(i,j,k, slice_var)
+                else
+                    ! if we are not dealing with rho then we need to divide by it
+                    current_average = current_average + (w(i,j,k, slice_var)/w(i,j,k, 1))
+                end if
+
+            enddo
+            ! calculate the mean of the data
+            ! TODO: hopefully this is not an overflow somewhere
+            current_average = current_average / nz
+
+            span_average(i,j) = current_average
+        enddo
+    enddo
+
+    ! write everthing to files and cleanup
+    open(23, file=filename)
+        write(23, *) slice
+    close(23)
+end subroutine helper_write_span_averaged
