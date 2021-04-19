@@ -136,4 +136,4 @@ $(EXEC): $(OBJS) Makefile
 
 .PHONY: clean
 clean:
-	$(RM) $(EXEC) $(MAIN) $(OBJS) $(OBJ_MODS) $(GRID) *.mod cfz_*.dat *.vtr *.q *.csv *.prof *.bin cf_*.dat d*g.dat *.xyz wavplot_*.dat csv_data/*
+	$(RM) $(EXEC) $(MAIN) $(OBJS) $(OBJ_MODS) $(GRID) *.mod cfz_*.dat *.vtr *.q *.csv *.prof *.bin cf_*.dat d*g.dat *.xyz wavplot_*.dat csv_data/* spans/*

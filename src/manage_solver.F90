@@ -3,19 +3,20 @@ subroutine manage_solver
  use mod_streams
  implicit none
 !
- logical :: updatestat,savefield,saverst
+ logical :: updatestat,savefield,saverst,saveprobe
 !
 !call write_wallpressure
 !
  updatestat = .false.
  savefield  = .false.
  saverst    = .false.
+ saveprobe  = .true.
 !
  if (mod(icyc,istat)==0) updatestat = .true.
  if (telaps>tsol(istore)) savefield = .true.
  if (telaps>tsol_restart(istore_restart)) saverst = .true.
 !
- if (updatestat.or.savefield.or.saverst) then
+ if (updatestat.or.savefield.or.saverst.or.saveprobe) then
   call updateghost()
   call prims()
   call copy_gpu_to_cpu()
@@ -61,7 +62,7 @@ subroutine manage_solver
  endif
 
 !
- if (updatestat.or.savefield.or.saverst) then
+ if (updatestat.or.savefield.or.saverst.or.saveprobe) then
   call reset_cpu_gpu()
  endif
 !

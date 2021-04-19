@@ -1,4 +1,4 @@
-subroutine to_file(input_filename, input_filename_2, i,j)
+subroutine to_file(input_filename, i,j)
     use mod_streams
     use mod_sys
     implicit none
@@ -22,16 +22,6 @@ subroutine to_file(input_filename, input_filename_2, i,j)
         wwrite = rhow / rho
 
         write(21, "(E25.20, A1, E25.20, A1, E25.20, A1, E25.20)") rho, ",", uwrite, ",", vwrite, ",", wwrite
-
-        rho =  w_gpu(i,j,k,1)
-        rhou = w_gpu(i,j,k,2)
-        rhov = w_gpu(i,j,k,3)
-        rhow = w_gpu(i,j,k,4)
-
-        uwrite = rhou / rho
-        vwrite = rhov / rho
-        wwrite = rhow / rho
-        write(22, "(E25.20, A1, E25.20, A1, E25.20, A1, E25.20)") rho, ",", uwrite, ",", vwrite, ",", wwrite
     enddo
 
     close(21)
@@ -43,31 +33,28 @@ subroutine write_probe_data()
 
     implicit none
     integer :: i, j, k, dead
-    character(len=70) :: filename, filename2
+    character(len=70) :: filename
 
     ! if we are the main thread
     if (masterproc) then
         ! write probe data 1/4th in the x direction and half in y direction
         write(filename, "(A24, I5.5, A4)") "csv_data/w_probe_data_1_", icyc, ".csv"
-        write(filename2, "(A28, I5.5, A4)") "csv_data/w_gpu_probe_data_1_", icyc, ".csv"
         i = nx *1/4
         j = ny / 2
         !print *, filename
-        call to_file(filename, filename2, i, j)
+        call to_file(filename, i, j)
 
         ! write probe data 1/2 in the x direction and half in y direction
         write(filename, "(A24, I5.5, A4)") "csv_data/w_probe_data_2_", icyc, ".csv"
-        write(filename2, "(A28, I5.5, A4)") "csv_data/w_gpu_probe_data_2_", icyc, ".csv"
         i = nx*2/4
         !print *, filename
-        call to_file(filename, filename2, i, j)
+        call to_file(filename, i, j)
 
         ! write probe data 3/4 in the x direction and half in y direction
         write(filename, "(A24, I5.5, A4)") "csv_data/w_probe_data_3_", icyc, ".csv"
-        write(filename2, "(A28, I5.5, A4)") "csv_data/w_gpu_probe_data_3_", icyc, ".csv"
         i = nx*3/4
         !print *, filename
-        call to_file(filename, filename2, i, j)
+        call to_file(filename, i, j)
     endif
 
 end subroutine write_probe_data
@@ -81,7 +68,6 @@ subroutine init_write_telaps()
         open(995, file="timesteps.csv", action="write", status="replace")
         write(995, *) "telaps"
     endif
-
 end subroutine init_write_telaps
 
 subroutine write_telaps(telaps_in)
@@ -110,7 +96,7 @@ subroutine write_span_averaged
         ! works for icyc < 99,999 iterations
         write(current_cycle, "(I5)") icyc
 
-        current_filename = "span_average_"//current_cycle//"_rho.dat"
+        current_filename = "spans/span_average_"//current_cycle//"_rho.dat"
         call helper_write_span_averaged(current_filename, 1)
     endif
 
@@ -122,6 +108,7 @@ end subroutine write_span_averaged
 subroutine helper_write_span_averaged(filename, slice_var)
     use mod_streams
     use mod_sys
+    implicit none
 
     ! arguments
     integer:: slice_var
@@ -130,6 +117,10 @@ subroutine helper_write_span_averaged(filename, slice_var)
     ! local variables
     real(8), dimension(:,:), allocatable :: span_average
     real(8) :: current_average
+
+    integer:: i, j, k
+
+    allocate(span_average(nx, ny))
 
     do i = 1,nx
         do j = 1, ny
@@ -156,8 +147,12 @@ subroutine helper_write_span_averaged(filename, slice_var)
         enddo
     enddo
 
-    ! write everthing to files and cleanup
-    open(23, file=filename)
-        write(23, *) slice
+    open(23, file=filename, form='formatted')
+    do i = 1,nx
+        do j = 1, ny
+            write(23, "(E25.20, A1, E25.20, A1, E25.20)") x(i), " ", y(j), " ", span_average(i,j)
+        enddo
+    enddo
+
     close(23)
 end subroutine helper_write_span_averaged
