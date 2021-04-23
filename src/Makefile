@@ -3,8 +3,8 @@
 # SUPPORTED MODES  : opt, debug [default=debug]
 # SUPPORTED PRECISIONS (PREC) : single, double [default=double]
 #----------------------------------------------------------------------
-#COMPILE = "nvfortran"
-COMPILE = "gnu"
+COMPILE = "nvfortran"
+#COMPILE = "gnu"
 MODE    = "opt"
 PREC    = "double"
 #----------------------------------------------------------------------
@@ -85,9 +85,9 @@ endif
 ifeq (${COMPILE},"gnu") # mpif90 from MPI library
     FC = /usr/bin/mpif90 
     ifeq (${MODE},"opt") 
-        OLEVEL = -O3 #-fno-inline-functions -fno-underscoring
+        OLEVEL = -O3 #-fno-inline-functions -fno-underscoring -ffree-line-length-512
     else
-        OLEVEL = -O2 -fbounds-check -g -fbacktrace -fdump-core -ffpe-trap=zero,invalid,overflow
+        OLEVEL = -O2 -fbounds-check -g -fbacktrace -fdump-core -ffpe-trap=zero,invalid,overflow -ffree-line-length-512
         #OLEVEL = -O2 -fbounds-check -g -fbacktrace -fdump-core
     endif
 endif
@@ -136,4 +136,4 @@ $(EXEC): $(OBJS) Makefile
 
 .PHONY: clean
 clean:
-	$(RM) $(EXEC) $(MAIN) $(OBJS) $(OBJ_MODS) $(GRID) *.mod cfz_*.dat *.vtr *.q *.csv *.prof *.bin cf_*.dat d*g.dat *.xyz wavplot_*.dat csv_data/* spans/*
+	$(RM) $(EXEC) $(MAIN) $(OBJS) $(OBJ_MODS) $(GRID) *.mod cfz_*.dat *.vtr *.q *.csv *.prof *.bin cf_*.dat d*g.dat *.xyz wavplot_*.dat csv_data/* spans/* *.vtk plotxy*.dat x.dat y.dat z.dat

@@ -48,6 +48,7 @@ subroutine solver
 
 !
   if (io_type>0) call manage_solver()
+  !exit ! break after we have written the data for the first step - TODO: REMOVE ME
 !
   if (mod(i,nprint)==0) then
    call computeresidual()

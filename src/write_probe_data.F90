@@ -12,16 +12,16 @@ subroutine to_file(input_filename, i,j)
     write(21, *) "rho, u, v, w"
 
     do k = 1, nz
-        rho =  w(i,j,k,1)
-        rhou = w(i,j,k,2)
-        rhov = w(i,j,k,3)
-        rhow = w(i,j,k,4)
+        rho =  w(1,i,j,k)
+        rhou = w(2,i,j,k)
+        rhov = w(3,i,j,k)
+        rhow = w(4,i,j,k)
 
         uwrite = rhou / rho
         vwrite = rhov / rho
         wwrite = rhow / rho
 
-        write(21, "(E25.20, A1, E25.20, A1, E25.20, A1, E25.20)") rho, ",", uwrite, ",", vwrite, ",", wwrite
+        write(21, "(E36.30, A1, E36.30, A1, E36.30, A1, E36.30)") rho, ",", uwrite, ",", vwrite, ",", wwrite
     enddo
 
     close(21)
@@ -90,15 +90,16 @@ subroutine write_span_averaged
 
     ! local variables
     character(len=5) :: current_cycle
+    character(len=2) :: mpi_process_number
     character(len=70) :: current_filename
 
-    if (masterproc) then
-        ! works for icyc < 99,999 iterations
-        write(current_cycle, "(I5)") icyc
+    write(mpi_process_number, "(I2.2)") nrank
 
-        current_filename = "spans/span_average_"//current_cycle//"_rho.dat"
-        call helper_write_span_averaged(current_filename, 1)
-    endif
+    ! works for icyc < 99,999 iterations
+    write(current_cycle, "(I5.5)") icyc
+
+    current_filename = "spans/span_average_"//mpi_process_number//"_"//current_cycle//"_rho.vtk"
+    call helper_write_span_averaged(current_filename, 1)
 
 end subroutine write_span_averaged
 
@@ -117,8 +118,16 @@ subroutine helper_write_span_averaged(filename, slice_var)
     ! local variables
     real(8), dimension(:,:), allocatable :: span_average
     real(8) :: current_average
-
     integer:: i, j, k
+
+    ! the number of points in each of the directions
+    character(len=800000) :: xml
+    character(len=5) :: nxstr, nystr, gloabl_x_end, global_x_start
+    character(len=16) :: curr_cycle
+
+    write(nxstr, "(I4)")  nxmax
+    write(nystr, "(I4)")  nymax
+    write(*,*) nxstr, nystr
 
     allocate(span_average(nx, ny))
 
@@ -132,27 +141,80 @@ subroutine helper_write_span_averaged(filename, slice_var)
                 ! otherwise this is painfully slow
                 if (slice_var == 1) then
                     ! if we are dealing with rho
-                    current_average = current_average + w(i,j,k, slice_var)
+                    current_average = current_average + (w(slice_var,i,j,k) / nz)
                 else
                     ! if we are not dealing with rho then we need to divide by it
-                    current_average = current_average + (w(i,j,k, slice_var)/w(i,j,k, 1))
+                    current_average = current_average + (w(slice_var,i,j,k) / (w(1,i,j,k) * nz))
                 end if
 
             enddo
             ! calculate the mean of the data
             ! TODO: hopefully this is not an overflow somewhere
-            current_average = current_average / nz
+            !current_average = current_average / nz
 
             span_average(i,j) = current_average
         enddo
     enddo
 
+    write(global_x_start, ("(I5)"))  (nx *nrank) +1
+    write(gloabl_x_end, ("(I5)"))  nx * (nrank+1)
+
+       !&  <RectilinearGrid WholeExtent="+1 +'//trim(adjustl(nxstr))//' +1 +'//trim(adjustl(nystr))//' +1 +1">'//new_line('a')//' &
     open(23, file=filename, form='formatted')
-    do i = 1,nx
-        do j = 1, ny
-            write(23, "(E25.20, A1, E25.20, A1, E25.20)") x(i), " ", y(j), " ", span_average(i,j)
+    xml = '<?xml version="1.0"?>'//new_line('a')//' &
+       & <VTKFile type="RectilinearGrid" version="1.0" byte_order="LittleEndian" header_type="UInt64">'//new_line('a')//' &
+       ! start whole extent
+       &  <RectilinearGrid WholeExtent="'//trim(adjustl(global_x_start))//' &
+       & '//trim(adjustl(gloabl_x_end))//' 1 '//trim(adjustl(nystr))//' 1 1">'//new_line('a')//' &
+       ! finished whole extent
+       &   <Piece Extent="+'//trim(adjustl(global_x_start))//' '//trim(adjustl(gloabl_x_end))//'& 
+       & 1 '//trim(adjustl(nystr))//' 1 1">'//new_line('a')//' &
+       &    <Coordinates>'//new_line('a')//' &
+       &     <DataArray type="Float64" NumberOfComponents="1" Name="X" format="ascii"> '
+
+   ! this indexing ensures that we are writing only the information that we are directly
+   ! in control of
+   ! for a nxmax = 1000 and 4 mpi process splitting this in the x direction nx = 250
+   ! nrank = 0 would cover ranges i = 1, 250
+   ! nrank = 1 would cover ranges i = 251, 500
+   ! etc
+    do i = (nx * nrank) +1 ,nx * (nrank + 1)
+        write(curr_cycle, "(E15.10)") xg(i)
+        xml = trim(xml) // ' ' // curr_cycle
+    enddo
+
+    xml = trim(xml) // '</DataArray>' // new_line('a') 
+    xml = trim(xml)// '      <DataArray type="Float64" NumberOfComponents="1" Name="Y" format="ascii">'
+
+    do j = 1,nymax
+        write(curr_cycle, "(E15.10)") yg(j)
+        xml = trim(xml) // ' ' // curr_cycle
+    enddo
+
+    xml = trim(xml) // '</DataArray>' // new_line('a')  
+
+    xml = trim(xml) // '      <DataArray type="Float64" NumberOfComponents="1" name="Z" format="ascii">0.0</DataArray>'  
+    xml = trim(xml) // new_line('a')
+    xml = trim(xml) // '     </Coordinates>' // new_line('a')
+    xml = trim(xml) // '   <PointData>' // new_line('a')
+    xml = trim(xml) // '    <DataArray type="Float64" NumberOfComponents="1" Name="rho" format="ascii">'
+
+    do j = 1, ny
+        do i = 1, nx
+            write(curr_cycle, '(E16.10)') span_average(i,j)
+            xml = trim(xml) // ' ' // curr_cycle // ' '
         enddo
     enddo
+
+    xml = trim(xml) // '</DataArray>' // new_line('a') // '    </PointData>' // new_line('a') 
+    xml = trim(xml) // '   </Piece>'//new_line('a') 
+    xml = trim(xml) // '  </RectilinearGrid>' //new_line('a') // '</VTKFile>'
+
+    write(23, '(a)') trim(adjustl(xml))
+
+    ! nx = nxmax / nblocks(1)
+    ! therefore every w and corresponding nx contains only a fraction of the data that
+    ! is required
 
     close(23)
 end subroutine helper_write_span_averaged
