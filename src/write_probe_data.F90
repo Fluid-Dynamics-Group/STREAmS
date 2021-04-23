@@ -2,13 +2,12 @@ subroutine to_file(input_filename, i,j)
     use mod_streams
     use mod_sys
     implicit none
-    character(len=70) :: input_filename , input_filename_2
+    character(len=70) :: input_filename
 
     integer :: i, j, k
     real(mykind) :: rho, rhou, rhov, rhow, vwrite, uwrite, wwrite
 
     open(21,file=input_filename)
-    open(22,file=input_filename_2)
     write(21, *) "rho, u, v, w"
 
     do k = 1, nz
@@ -98,7 +97,8 @@ subroutine write_span_averaged
     ! works for icyc < 99,999 iterations
     write(current_cycle, "(I5.5)") icyc
 
-    current_filename = "spans/span_average_"//mpi_process_number//"_"//current_cycle//"_rho.vtk"
+    current_filename = "spans/span_average_"//current_cycle//"_"//mpi_process_number//"_rho.vtk"
+
     call helper_write_span_averaged(current_filename, 1)
 
 end subroutine write_span_averaged
@@ -121,13 +121,13 @@ subroutine helper_write_span_averaged(filename, slice_var)
     integer:: i, j, k
 
     ! the number of points in each of the directions
-    character(len=800000) :: xml
+    character(len=1000) :: xml ! this allocation errors with nvhpc compiler
+    ! MUST USE `ulimit -s unlimited
     character(len=5) :: nxstr, nystr, gloabl_x_end, global_x_start
     character(len=16) :: curr_cycle
 
     write(nxstr, "(I4)")  nxmax
     write(nystr, "(I4)")  nymax
-    write(*,*) nxstr, nystr
 
     allocate(span_average(nx, ny))
 
@@ -156,6 +156,7 @@ subroutine helper_write_span_averaged(filename, slice_var)
         enddo
     enddo
 
+
     write(global_x_start, ("(I5)"))  (nx *nrank) +1
     write(gloabl_x_end, ("(I5)"))  nx * (nrank+1)
 
@@ -172,6 +173,8 @@ subroutine helper_write_span_averaged(filename, slice_var)
        &    <Coordinates>'//new_line('a')//' &
        &     <DataArray type="Float64" NumberOfComponents="1" Name="X" format="ascii"> '
 
+   write(23, "(a)") xml
+
    ! this indexing ensures that we are writing only the information that we are directly
    ! in control of
    ! for a nxmax = 1000 and 4 mpi process splitting this in the x direction nx = 250
@@ -180,18 +183,23 @@ subroutine helper_write_span_averaged(filename, slice_var)
    ! etc
     do i = (nx * nrank) +1 ,nx * (nrank + 1)
         write(curr_cycle, "(E15.10)") xg(i)
-        xml = trim(xml) // ' ' // curr_cycle
+        !xml = trim(xml) // ' ' // curr_cycle
+        write(23, "(A1, a)", advance="no") ' ', curr_cycle
     enddo
 
-    xml = trim(xml) // '</DataArray>' // new_line('a') 
-    xml = trim(xml)// '      <DataArray type="Float64" NumberOfComponents="1" Name="Y" format="ascii">'
+
+    xml = '</DataArray>' // new_line('a') 
+    xml = trim(xml) // '      <DataArray type="Float64" NumberOfComponents="1" Name="Y" format="ascii">'
+   write(23, "(a)") xml
 
     do j = 1,nymax
         write(curr_cycle, "(E15.10)") yg(j)
-        xml = trim(xml) // ' ' // curr_cycle
+        !xml = trim(xml) // ' ' // curr_cycle
+        write(23, "(a, A15)", advance="no") ' ', curr_cycle
     enddo
 
-    xml = trim(xml) // '</DataArray>' // new_line('a')  
+
+    xml = '</DataArray>' // new_line('a')  
 
     xml = trim(xml) // '      <DataArray type="Float64" NumberOfComponents="1" name="Z" format="ascii">0.0</DataArray>'  
     xml = trim(xml) // new_line('a')
@@ -199,14 +207,17 @@ subroutine helper_write_span_averaged(filename, slice_var)
     xml = trim(xml) // '   <PointData>' // new_line('a')
     xml = trim(xml) // '    <DataArray type="Float64" NumberOfComponents="1" Name="rho" format="ascii">'
 
+    write(23, "(a)") xml
+
     do j = 1, ny
         do i = 1, nx
             write(curr_cycle, '(E16.10)') span_average(i,j)
-            xml = trim(xml) // ' ' // curr_cycle // ' '
+            !xml = trim(xml) // ' ' // curr_cycle // ' '
+            write(23, "(a, A15)", advance="no") ' ', curr_cycle
         enddo
     enddo
 
-    xml = trim(xml) // '</DataArray>' // new_line('a') // '    </PointData>' // new_line('a') 
+    xml = '</DataArray>' // new_line('a') // '    </PointData>' // new_line('a') 
     xml = trim(xml) // '   </Piece>'//new_line('a') 
     xml = trim(xml) // '  </RectilinearGrid>' //new_line('a') // '</VTKFile>'
 

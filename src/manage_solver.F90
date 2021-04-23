@@ -10,11 +10,12 @@ subroutine manage_solver
  updatestat = .false.
  savefield  = .false.
  saverst    = .false.
- saveprobe  = .true.
+ saveprobe  = .false.
 !
  if (mod(icyc,istat)==0) updatestat = .true.
  if (telaps>tsol(istore)) savefield = .true.
  if (telaps>tsol_restart(istore_restart)) saverst = .true.
+ if (mod(icyc, 10) == 0) saveprobe = .true.
 !
  if (updatestat.or.savefield.or.saverst.or.saveprobe) then
   call updateghost()
@@ -32,8 +33,10 @@ subroutine manage_solver
   endif
  endif
 
- call write_probe_data
- call write_span_averaged
+ if (saveprobe) then
+    call write_probe_data
+    call write_span_averaged
+ endif
 !
 !Writing fields
  if (savefield) then

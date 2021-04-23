@@ -48,7 +48,7 @@ ifeq (${COMPILE},"nvfortran") # mpif90 shipped with PGI compiler
 	#FC = mpifort # precompiled mpifort included with nvidia hpc
     FC = mpif90
     ifeq (${MODE},"opt") 
-        OLEVEL = -O3 -Mcuda=cuda11.2 -DUSE_CUDA -DCUDA_ASYNC 
+        OLEVEL = -O3 -Mcuda=cuda11.2 -DUSE_CUDA -DCUDA_ASYNC #-Mnoautoinline
     else
         OLEVEL = -O2 -Mcuda=ccall,cuda11.2 -DUSE_CUDA -DCUDA_ASYNC #-DNOCUDAAWAREMPI
     endif
