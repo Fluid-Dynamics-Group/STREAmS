@@ -14,6 +14,8 @@ subroutine manage_solver
 !
  if (mod(icyc,istat)==0) updatestat = .true.
  if (telaps>tsol(istore)) savefield = .true.
+ if (mod(icyc, 100)) savefield = .true.
+
  if (telaps>tsol_restart(istore_restart)) saverst = .true.
  if (mod(icyc, 10) == 0) saveprobe = .true.
 !

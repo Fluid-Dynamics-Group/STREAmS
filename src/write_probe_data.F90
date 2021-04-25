@@ -141,16 +141,16 @@ subroutine helper_write_span_averaged(filename, slice_var)
                 ! otherwise this is painfully slow
                 if (slice_var == 1) then
                     ! if we are dealing with rho
-                    current_average = current_average + (w(slice_var,i,j,k) / nz)
+                    current_average = current_average + w(slice_var,i,j,k)
                 else
                     ! if we are not dealing with rho then we need to divide by it
-                    current_average = current_average + (w(slice_var,i,j,k) / (w(1,i,j,k) * nz))
+                    current_average = current_average + (w(slice_var,i,j,k) / w(1,i,j,k))
                 end if
 
             enddo
             ! calculate the mean of the data
             ! TODO: hopefully this is not an overflow somewhere
-            !current_average = current_average / nz
+            current_average = current_average / nz
 
             span_average(i,j) = current_average
         enddo
@@ -173,28 +173,25 @@ subroutine helper_write_span_averaged(filename, slice_var)
        &    <Coordinates>'//new_line('a')//' &
        &     <DataArray type="Float64" NumberOfComponents="1" Name="X" format="ascii"> '
 
-   write(23, "(a)") xml
+    write(23, "(a)") xml
 
-   ! this indexing ensures that we are writing only the information that we are directly
-   ! in control of
-   ! for a nxmax = 1000 and 4 mpi process splitting this in the x direction nx = 250
-   ! nrank = 0 would cover ranges i = 1, 250
-   ! nrank = 1 would cover ranges i = 251, 500
-   ! etc
+    ! this indexing ensures that we are writing only the information that we are directly
+    ! in control of
+    ! for a nxmax = 1000 and 4 mpi process splitting this in the x direction nx = 250
+    ! nrank = 0 would cover ranges i = 1, 250
+    ! nrank = 1 would cover ranges i = 251, 500
+    ! etc
     do i = (nx * nrank) +1 ,nx * (nrank + 1)
         write(curr_cycle, "(E15.10)") xg(i)
-        !xml = trim(xml) // ' ' // curr_cycle
         write(23, "(A1, a)", advance="no") ' ', curr_cycle
     enddo
 
-
     xml = '</DataArray>' // new_line('a') 
     xml = trim(xml) // '      <DataArray type="Float64" NumberOfComponents="1" Name="Y" format="ascii">'
-   write(23, "(a)") xml
+    write(23, "(a)") xml
 
     do j = 1,nymax
         write(curr_cycle, "(E15.10)") yg(j)
-        !xml = trim(xml) // ' ' // curr_cycle
         write(23, "(a, A15)", advance="no") ' ', curr_cycle
     enddo
 
