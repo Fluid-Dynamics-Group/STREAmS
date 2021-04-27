@@ -13,11 +13,11 @@ subroutine manage_solver
  saveprobe  = .false.
 !
  if (mod(icyc,istat)==0) updatestat = .true.
- if (telaps>tsol(istore)) savefield = .true.
- if (mod(icyc, 100)) savefield = .true.
+ !if (telaps>tsol(istore)) savefield = .true.
+ if (mod(icyc, 5000) == 0) savefield = .true.
 
  if (telaps>tsol_restart(istore_restart)) saverst = .true.
- if (mod(icyc, 10) == 0) saveprobe = .true.
+ if (mod(icyc, 100) == 0) saveprobe = .true.
 !
  if (updatestat.or.savefield.or.saverst.or.saveprobe) then
   call updateghost()
