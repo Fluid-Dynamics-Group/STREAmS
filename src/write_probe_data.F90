@@ -98,7 +98,6 @@ subroutine write_span_averaged
     character(len=2) :: mpi_process_number
     character(len=70) :: current_filename
 
-    write(*,*) "writing span averaged"
     write(mpi_process_number, "(I2.2)") nrank
 
     ! works for icyc < 99,999 iterations
@@ -123,6 +122,12 @@ subroutine write_span_averaged
     call move_alloc(span_average, span_average_w)
 
     call write_span_vtk(current_filename)
+
+    ! everything else is deallocated by moving the allocation to span_average 
+    ! when writing to vtk
+    ! we deallocate here so that we dont error when allocating at the start of 
+    ! this subroutine on the second time that it is called
+    deallocate(span_average  )
 
 end subroutine write_span_averaged
 
@@ -179,7 +184,6 @@ subroutine write_span_vtk(filename)
     character(len=16) :: curr_cycle
     character(len=70) :: filename
 
-    write(*,*) "writing the span vtk to file"
     write(nxstr, "(I4)")  nxmax
     write(nystr, "(I4)")  nymax
 

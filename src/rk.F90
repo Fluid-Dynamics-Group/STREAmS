@@ -66,6 +66,8 @@ subroutine rk
 #else
   call updateghost()
   call prims()
+
+  ! for supersonic sbli case ibc(2) == 4, so the first from the if statement is used here
   if (ibc(2)==4.or.ibc(2)==8) then
    call euler_i(0,nx-1)
   else

@@ -158,6 +158,7 @@ subroutine euler_i(istart, iend)
 
 !print*,'Running with euler_x threads:',n_th_x, n_th_y
 
+! this is guaranteed to be true I think
  if(iend == endi) then
  !$cuf kernel do(3) <<<*,*,stream=stream1>>>
   do k=1,nz
@@ -430,6 +431,9 @@ subroutine euler_i(istart, iend)
 #endif
 !
 #ifdef USE_CUDA
+ ! the second location that iend is mentione
+ ! no idea what iorder is  - it comes from input.dat
+ ! its related to the maximum stencil width
  if (iend == (iorder/2-1)) then
    !@cuf iercuda=cudaDeviceSynchronize()
  endif
@@ -1212,6 +1216,7 @@ end subroutine euler_k
         w_gpu, temperature_gpu, ducros_gpu, &
         fhat_trans_gpu, temperature_trans_gpu, fl_trans_gpu, & 
         fhat_gpu, fl_gpu, dcoe_gpu, dcsidx_gpu, detady_gpu, dzitdz_gpu, gplus, gminus, wv_trans_gpu )
+
         implicit none
         integer, parameter :: mykind = MYKIND
         ! Passed arguments
