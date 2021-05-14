@@ -39,8 +39,23 @@ subroutine write_probe_data()
     integer :: i, j, k, dead
     character(len=70) :: filename
 
+    ! The three probe locations 
+    !  |____________________|____________________|___________________|____________________|
+    !  |                    |                    |                   |                    |    
+    !  |                    |                    |                   |                    |    
+    !  |                    |                    |                   |                    |    
+    !  |                    |                    |                   |                    |    
+    !  |          X         |                   X|                   |         X          |    
+    !  |                    |                    |                   |                    |    
+    !  |                    |                    |                   |                    |    
+    !  |                    |                    |                   |                    |    
+    !  |                    |                    |                   |                    |    
+    !  |____________________|____________________|___________________|____________________|
+    !
+    !
+
     ! if we are the main thread
-    if (masterproc) then
+    if (nrank==0) then
         ! write probe data 1/4th in the x direction and half in y direction
         write(filename, "(A24, I5.5, A4)") "csv_data/w_probe_data_1_", icyc, ".csv"
         i = nx *1/4
@@ -48,15 +63,18 @@ subroutine write_probe_data()
         !print *, filename
         call to_file(filename, i, j)
 
+    elseif (nrank==1) then
         ! write probe data 1/2 in the x direction and half in y direction
         write(filename, "(A24, I5.5, A4)") "csv_data/w_probe_data_2_", icyc, ".csv"
-        i = nx*2/4
+        i = nx-1
         !print *, filename
         call to_file(filename, i, j)
 
-        ! write probe data 3/4 in the x direction and half in y direction
+    elseif (nrank ==3) then
+        ! write probe data in the middle of the fourth process area, which
+        ! comes out to be ~3/4ths of the entire x distance
         write(filename, "(A24, I5.5, A4)") "csv_data/w_probe_data_3_", icyc, ".csv"
-        i = nx*3/4
+        i = nx*2/4
         !print *, filename
         call to_file(filename, i, j)
     endif

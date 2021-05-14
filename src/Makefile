@@ -116,7 +116,7 @@ OBJ_FILES = alloc.o bcdf.o bcextr.o bcfree.o bc.o bcrelax.o bcshk.o bcswap.o \
     setup.o solver.o startmpi.o stats.o step.o target_reystress.o tbforce.o updateghost.o utility.o \
     visflx.o writedf.o writefield.o writefieldvtk.o writegridplot3d.o writerst.o \
     writestatbl.o writestatchann.o writestat.o writestatzbl.o write_wallpressure.o \
-	write_probe_data.o
+	write_probe_data.o bc_constant_input.o
 
 OBJ_MODS = mod_streams.o mod_sys.o euler.o
 OBJS = $(OBJ_MODS) $(OBJ_FILES) $(MAIN)

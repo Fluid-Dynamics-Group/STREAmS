@@ -53,6 +53,7 @@ subroutine bc(inr)
       call bcdf(ilat)
       dfupdated = .true.
      endif
+    if (ibc(ilat)==10) call bc_constant_input(ilat)
     endif
    enddo
 !

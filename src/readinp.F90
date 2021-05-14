@@ -77,6 +77,7 @@ subroutine readinp
   ibc(4) = 4
  case (2) ! supersonic sbli case (the one we are interested in)
   ibc(1) = 9
+  !ibc(1) = 10
   ibc(2) = 4
   ibc(3) = 8
   ibc(4) = 7
