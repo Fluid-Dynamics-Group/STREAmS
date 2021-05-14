@@ -79,7 +79,8 @@ subroutine readinp
   ibc(1) = 9
   !ibc(1) = 10
   ibc(2) = 4
-  ibc(3) = 8
+  !ibc(3) = 8
+  ibc(3) = 11
   ibc(4) = 7
  end select
 !
