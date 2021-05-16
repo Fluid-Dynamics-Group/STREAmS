@@ -81,7 +81,8 @@ subroutine readinp
   ibc(2) = 4
   !ibc(3) = 8
   ibc(3) = 11
-  ibc(4) = 7
+  !ibc(4) = 7 ! default
+  ibc(4) = 8
  end select
 !
  ndim = 3 ! default number of dimensions
