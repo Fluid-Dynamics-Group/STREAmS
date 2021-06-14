@@ -139,7 +139,7 @@ subroutine euler_i(istart, iend)
    call euler_i_kernel<<<grid, tBlock, 0, stream1>>>(nv, nx, ny, nz, ng, ng2, gamma, gm1, &
      iweno, istart, iend, endi, endj, endk, lmax, iorder, iflow, &
      w_gpu, temperature_gpu, ducros_gpu, &
-     fhat_trans_gpu, temperature_trans_gpu, fl_trans_gpu, & 
+     fhat_trans_gpu, temperature_trans_gpu, fl_trans_gpu, &
      fhat_gpu, fl_gpu, dcoe_gpu, dcsidx_gpu, detady_gpu, dzitdz_gpu, gplus_x, gminus_x, wv_trans_gpu )
   else
    n_th_x = EULERCENTRAL_THREADS_X
@@ -494,7 +494,7 @@ subroutine euler_j
      tBlock = dim3(n_th_x,n_th_y,1)
      grid = dim3(ceiling(real(endi)/tBlock%x),ceiling(real(endk)/tBlock%y),1)
      call euler_j_kernel<<<grid, tBlock, 0, stream1>>>(nv, nx, ny, nz, ng, ng2, gamma, gm1, &
-         iweno, jstart, 0, endi, endj, endk, lmax, iorder, iflow, & 
+         iweno, jstart, 0, endi, endj, endk, lmax, iorder, iflow, &
          w_gpu, temperature_gpu, ducros_gpu, &
          fhat_gpu, fl_gpu, dcoe_gpu, dcsidx_gpu, detady_gpu, dzitdz_gpu, gplus_y, gminus_y, wv_gpu )
     else
@@ -1138,8 +1138,8 @@ end subroutine euler_k
         real(mykind) :: uuip, vvip, wwip, ppip, entip
         real(mykind) :: ft1, ft2, ft3, ft4, ft5, ft6
         real(mykind) :: uvs1, uvs2, uvs3, uvs4, uvs5, uvs6, uv_part
- 
-        j = blockDim%x * (blockIdx%x - 1) + threadIdx%x 
+
+        j = blockDim%x * (blockIdx%x - 1) + threadIdx%x
         k = blockDim%y * (blockIdx%y - 1) + threadIdx%y
         if(j > endj .or. k > endk) return
 
@@ -1196,7 +1196,7 @@ end subroutine euler_k
             fhat_trans_gpu(j,i,k,5) = 0.25_mykind*ft5
         enddo
 
-!       Update net flux 
+!       Update net flux
         if (iend == endi) then
             do i=1,endi ! loop on the inner nodes
                 do m=1,5
@@ -1210,7 +1210,7 @@ end subroutine euler_k
     attributes(global) subroutine euler_i_kernel(nv, nx, ny, nz, ng, ng2, gamma, gm1, &
         iweno, istart, iend, endi, endj, endk, lmax, iorder, iflow, &
         w_gpu, temperature_gpu, ducros_gpu, &
-        fhat_trans_gpu, temperature_trans_gpu, fl_trans_gpu, & 
+        fhat_trans_gpu, temperature_trans_gpu, fl_trans_gpu, &
         fhat_gpu, fl_gpu, dcoe_gpu, dcsidx_gpu, detady_gpu, dzitdz_gpu, gplus, gminus, wv_trans_gpu )
         implicit none
         integer, parameter :: mykind = MYKIND
@@ -1250,8 +1250,8 @@ end subroutine euler_k
         real(mykind), dimension(5) :: ev, evmax, fi, ghat, gl, gr
         real(mykind), dimension(5,5) :: el, er
         real(mykind) :: rho, rhou, wc, gc
- 
-        j = blockDim%x * (blockIdx%x - 1) + threadIdx%x 
+
+        j = blockDim%x * (blockIdx%x - 1) + threadIdx%x
         k = blockDim%y * (blockIdx%y - 1) + threadIdx%y
         if(j > endj .or. k > endk) return
 
@@ -1277,7 +1277,7 @@ end subroutine euler_k
                     uvs5 = 0._mykind
                     uvs6 = 0._mykind
                     do m=0,l-1
-                        rhom  = wv_trans_gpu(j,i-m,k,1) + wv_trans_gpu(j,i-m+l,k,1) 
+                        rhom  = wv_trans_gpu(j,i-m,k,1) + wv_trans_gpu(j,i-m+l,k,1)
 
                         uui   = wv_trans_gpu(j,i-m,k,2)
                         vvi   = wv_trans_gpu(j,i-m,k,3)
@@ -1340,8 +1340,8 @@ end subroutine euler_k
                 h         =  (r*hp  +h)*rp1
                 qq        =  0.5_mykind * (uu*uu  +vv*vv + ww*ww)
                 cc        =  gm1 * (h - qq)
-                c         =  sqrt(cc) 
-                ci        =  1._mykind/c 
+                c         =  sqrt(cc)
+                ci        =  1._mykind/c
 
 !               left eigenvectors matrix (at Roe state)
 !
@@ -1435,7 +1435,7 @@ end subroutine euler_k
                     fi(2)  = uu *  rho * wv_trans_gpu(j,ll,k,2)  + pp
                     fi(3)  = uu *  rho * wv_trans_gpu(j,ll,k,3)
                     fi(4)  = uu *  rho * wv_trans_gpu(j,ll,k,4)
-                    fi(5)  = uu *  rho * wv_trans_gpu(j,ll,k,5) 
+                    fi(5)  = uu *  rho * wv_trans_gpu(j,ll,k,5)
                     do m=1,5
                         wc = 0._mykind
                         gc = 0._mykind
@@ -1476,7 +1476,7 @@ end subroutine euler_k
             endif
         enddo
 
-!       Update net flux 
+!       Update net flux
         if (iend == endi) then
             do i=1,endi ! loop on the inner nodes
                 do m=1,5
@@ -1508,8 +1508,8 @@ end subroutine euler_k
         real(mykind) :: uuip, vvip, wwip, ppip, entip
         real(mykind) :: ft1, ft2, ft3, ft4, ft5, ft6
         real(mykind) :: uvs1, uvs2, uvs3, uvs4, uvs5, uvs6, uv_part
- 
-        i = blockDim%x * (blockIdx%x - 1) + threadIdx%x 
+
+        i = blockDim%x * (blockIdx%x - 1) + threadIdx%x
         k = blockDim%y * (blockIdx%y - 1) + threadIdx%y
         if(i > endi .or. k > endk) return
 
@@ -1528,7 +1528,7 @@ end subroutine euler_k
                 uvs5 = 0._mykind
                 uvs6 = 0._mykind
                 do m=0,l-1
-                    rhom  = wv_gpu(i,j-m,k,1) + wv_gpu(i,j-m+l,k,1) 
+                    rhom  = wv_gpu(i,j-m,k,1) + wv_gpu(i,j-m+l,k,1)
 
                     uui   = wv_gpu(i,j-m,k,2)
                     vvi   = wv_gpu(i,j-m,k,3)
@@ -1580,7 +1580,7 @@ end subroutine euler_k
             fhat_gpu(i,j,k,5) = fh5
         enddo
 
-!       Update net flux 
+!       Update net flux
         do j=jstart,endj ! loop on the inner nodes
             do m=1,5
                 fl_gpu(i,j,k,m) = fl_gpu(i,j,k,m) + (fhat_gpu(i,j,k,m)-fhat_gpu(i,j-1,k,m))*detady_gpu(j)
@@ -1626,8 +1626,8 @@ end subroutine euler_k
         real(mykind), dimension(5) :: ev, evmax, fi, ghat, gl, gr
         real(mykind), dimension(5,5) :: el, er
         real(mykind) :: rho, rhov, wc, gc
- 
-        i = blockDim%x * (blockIdx%x - 1) + threadIdx%x 
+
+        i = blockDim%x * (blockIdx%x - 1) + threadIdx%x
         k = blockDim%y * (blockIdx%y - 1) + threadIdx%y
         if(i > endi .or. k > endk) return
 
@@ -1653,7 +1653,7 @@ end subroutine euler_k
                     uvs5 = 0._mykind
                     uvs6 = 0._mykind
                     do m=0,l-1
-                        rhom  = wv_gpu(i,j-m,k,1) + wv_gpu(i,j-m+l,k,1) 
+                        rhom  = wv_gpu(i,j-m,k,1) + wv_gpu(i,j-m+l,k,1)
 
                         uui   = wv_gpu(i,j-m,k,2)
                         vvi   = wv_gpu(i,j-m,k,3)
@@ -1736,8 +1736,8 @@ end subroutine euler_k
                 h         =  (r*hp  +h)*rp1
                 qq        =  0.5_mykind * (uu*uu  +vv*vv + ww*ww)
                 cc        =  gm1 * (h - qq)
-                c         =  sqrt(cc) 
-                ci        =  1._mykind/c 
+                c         =  sqrt(cc)
+                ci        =  1._mykind/c
 !
 !               left eigenvectors matrix (at Roe state)
 !
@@ -1864,7 +1864,7 @@ end subroutine euler_k
             endif
         enddo
 
-!       Update net flux 
+!       Update net flux
         do j=jstart,endj ! loop on the inner nodes
             jm = j-1
             do m=1,5
@@ -1895,8 +1895,8 @@ end subroutine euler_k
         real(mykind) :: uuip, vvip, wwip, ppip, entip
         real(mykind) :: ft1, ft2, ft3, ft4, ft5, ft6
         real(mykind) :: uvs1, uvs2, uvs3, uvs4, uvs5, uvs6, uv_part
- 
-        i = blockDim%x * (blockIdx%x - 1) + threadIdx%x 
+
+        i = blockDim%x * (blockIdx%x - 1) + threadIdx%x
         j = blockDim%y * (blockIdx%y - 1) + threadIdx%y
         if(i > endi .or. j > endj) return
 
@@ -1915,7 +1915,7 @@ end subroutine euler_k
                 uvs5 = 0._mykind
                 uvs6 = 0._mykind
                 do m=0,l-1
-                    rhom  = wv_gpu(i,j,k-m,1) + wv_gpu(i,j,k-m+l,1) 
+                    rhom  = wv_gpu(i,j,k-m,1) + wv_gpu(i,j,k-m+l,1)
 
                     uui   = wv_gpu(i,j,k-m,2)
                     vvi   = wv_gpu(i,j,k-m,3)
@@ -1951,7 +1951,7 @@ end subroutine euler_k
             fhat_gpu(i,j,k,5) = 0.25_mykind*ft5
         enddo
 
-!       Update net flux 
+!       Update net flux
         do k=kstart,endk ! loop on the inner nodes
             do m=1,5
                 fl_gpu(i,j,k,m) = fl_gpu(i,j,k,m) + (fhat_gpu(i,j,k,m)-fhat_gpu(i,j,k-1,m))*dzitdz_gpu(k)
@@ -1997,8 +1997,8 @@ end subroutine euler_k
         real(mykind), dimension(5) :: ev, evmax, fi, ghat, gl, gr
         real(mykind), dimension(5,5) :: el, er
         real(mykind) :: rho, rhow, wc, gc
- 
-        i = blockDim%x * (blockIdx%x - 1) + threadIdx%x 
+
+        i = blockDim%x * (blockIdx%x - 1) + threadIdx%x
         j = blockDim%y * (blockIdx%y - 1) + threadIdx%y
         if(i > endi .or. j > endj) return
 
@@ -2024,7 +2024,7 @@ end subroutine euler_k
                     uvs5 = 0._mykind
                     uvs6 = 0._mykind
                     do m=0,l-1
-                        rhom  = wv_gpu(i,j,k-m,1) + wv_gpu(i,j,k-m+l,1) 
+                        rhom  = wv_gpu(i,j,k-m,1) + wv_gpu(i,j,k-m+l,1)
 
                         uui   = wv_gpu(i,j,k-m,2)
                         vvi   = wv_gpu(i,j,k-m,3)
@@ -2091,8 +2091,8 @@ end subroutine euler_k
                 h         =  (r*hp  +h)*rp1
                 qq        =  0.5_mykind * (uu*uu  +vv*vv + ww*ww)
                 cc        =  gm1 * (h - qq)
-                c         =  sqrt(cc) 
-                ci        =  1._mykind/c 
+                c         =  sqrt(cc)
+                ci        =  1._mykind/c
 !
 !               left eigenvectors matrix (at Roe state)
 !
@@ -2218,7 +2218,7 @@ end subroutine euler_k
             endif
         enddo
 
-!       Update net flux 
+!       Update net flux
         do k=kstart,endk ! loop on the inner nodes
             km = k-1
             do m=1,5
@@ -2234,7 +2234,7 @@ end subroutine euler_k
 attributes(device) &
 #endif
 subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
-!    
+!
      implicit none
      integer, parameter :: mykind = MYKIND
 !
@@ -2242,39 +2242,39 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
      integer :: nvar, iweno
      real(mykind),dimension(nvar,2*iweno) :: vm,vp
      real(mykind),dimension(nvar) :: vminus,vplus
-!    
+!
 !    Local variables
      real(mykind),dimension(-1:4) :: dwe           ! linear weights
      real(mykind),dimension(-1:4) :: alfp,alfm     ! alpha_l
      real(mykind),dimension(-1:4) :: alfp_map,alfm_map ! alpha_l
      real(mykind),dimension(-1:4) :: betap,betam   ! beta_l
      real(mykind),dimension(-1:4) :: omp,omm       ! WENO weights
-!    
+!
      integer :: r,i,j,k,l,m
      real(mykind) :: c0,c1,c2,c3,c4,d0,d1,d2,d3,d4,summ,sump
      real(mykind) :: x,y,y2
-!    
+!
      if (iweno==1) then ! Godunov
-!    
+!
          i = iweno ! index of intermediate node to perform reconstruction
-!    
+!
          vminus(1:nvar) = vp(1:nvar,i)
          vplus (1:nvar) = vm(1:nvar,i+1)
-!    
+!
      elseif (iweno==2) then ! WENO-3
-!    
+!
          i = iweno ! index of intermediate node to perform reconstruction
-!    
+!
          dwe(1)   = 2._mykind/3._mykind
          dwe(0)   = 1._mykind/3._mykind
-!    
+!
          do m=1,nvar
-!    
+!
              betap(0)  = (vp(m,i  )-vp(m,i-1))**2
              betap(1)  = (vp(m,i+1)-vp(m,i  ))**2
              betam(0)  = (vm(m,i+2)-vm(m,i+1))**2
              betam(1)  = (vm(m,i+1)-vm(m,i  ))**2
-!    
+!
              sump = 0._mykind
              summ = 0._mykind
              do l=0,1
@@ -2287,21 +2287,21 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
                  omp(l) = alfp(l)/sump
                  omm(l) = alfm(l)/summ
              enddo
-!    
+!
              vminus(m) = omp(0) *(-vp(m,i-1)+3*vp(m,i  )) + omp(1) *( vp(m,i  )+ vp(m,i+1))
              vplus(m)  = omm(0) *(-vm(m,i+2)+3*vm(m,i+1)) + omm(1) *( vm(m,i  )+ vm(m,i+1))
-!    
+!
          enddo ! end of m-loop
-!    
+!
          do m=1,nvar
              vminus(m) = 0.5_mykind*vminus(m)
              vplus(m)  = 0.5_mykind*vplus(m)
          enddo
-!    
+!
      elseif (iweno==3) then ! WENO-5
-!    
+!
       i = iweno ! index of intermediate node to perform reconstruction
-!    
+!
       dwe( 0) = 1._mykind/10._mykind
       dwe( 1) = 6._mykind/10._mykind
       dwe( 2) = 3._mykind/10._mykind
@@ -2314,17 +2314,17 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
       c2 =-1._mykind/6._mykind
       c3 =-7._mykind/6._mykind
       c4 =11._mykind/6._mykind
-!    
+!
       do m=1,nvar
-!    
+!
        betap(2) = d0*(     vp(m,i)-2._mykind*vp(m,i+1)+vp(m,i+2))**2+d1*(3._mykind*vp(m,i)-4._mykind*vp(m,i+1)+vp(m,i+2))**2
        betap(1) = d0*(     vp(m,i-1)-2._mykind*vp(m,i)+vp(m,i+1))**2+d1*(     vp(m,i-1)-vp(m,i+1) )**2
        betap(0) = d0*(     vp(m,i)-2._mykind*vp(m,i-1)+vp(m,i-2))**2+d1*(3._mykind*vp(m,i)-4._mykind*vp(m,i-1)+vp(m,i-2))**2
-!    
+!
        betam(2) = d0*(     vm(m,i+1)-2._mykind*vm(m,i)+vm(m,i-1))**2+d1*(3._mykind*vm(m,i+1)-4._mykind*vm(m,i)+vm(m,i-1))**2
        betam(1) = d0*(     vm(m,i+2)-2._mykind*vm(m,i+1)+vm(m,i))**2+d1*(     vm(m,i+2)-vm(m,i) )**2
        betam(0) = d0*(     vm(m,i+1)-2._mykind*vm(m,i+2)+vm(m,i+3))**2+d1*(3._mykind*vm(m,i+1)-4._mykind*vm(m,i+2)+vm(m,i+3))**2
-!    
+!
        sump = 0._mykind
        summ = 0._mykind
        do l=0,2
@@ -2342,25 +2342,25 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
          & omp(1)*(c2*vp(m,i-1)+c1*vp(m,i  )+c0*vp(m,i+1)) + omp(0)*(c0*vp(m,i-2)+c3*vp(m,i-1)+c4*vp(m,i  ))
        vplus(m)   = omm(2)*(c0*vm(m,i+1)+c1*vm(m,i  )+c2*vm(m,i-1)) +  &
          & omm(1)*(c2*vm(m,i+2)+c1*vm(m,i+1)+c0*vm(m,i  )) + omm(0)*(c0*vm(m,i+3)+c3*vm(m,i+2)+c4*vm(m,i+1))
-!    
-      enddo ! end of m-loop 
-!    
+!
+      enddo ! end of m-loop
+!
      elseif (iweno==4) then ! WENO-7
-!    
+!
       i = iweno ! index of intermediate node to perform reconstruction
-!    
+!
       dwe( 0) = 1._mykind/35._mykind
       dwe( 1) = 12._mykind/35._mykind
       dwe( 2) = 18._mykind/35._mykind
       dwe( 3) = 4._mykind/35._mykind
-!    
+!
 !     JS weights
       d1 = 1._mykind/36._mykind
       d2 = 13._mykind/12._mykind
       d3 = 781._mykind/720._mykind
-!    
+!
       do m=1,nvar
-!    
+!
        betap(3)= d1*(-11*vp(m,  i)+18*vp(m,i+1)- 9*vp(m,i+2)+ 2*vp(m,i+3))**2+&
        &  d2*(  2*vp(m,  i)- 5*vp(m,i+1)+ 4*vp(m,i+2)-   vp(m,i+3))**2+ &
        & d3*(   -vp(m,  i)+ 3*vp(m,i+1)- 3*vp(m,i+2)+   vp(m,i+3))**2
@@ -2373,7 +2373,7 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
        betap(0)= d1*(- 2*vp(m,i-3)+ 9*vp(m,i-2)-18*vp(m,i-1)+11*vp(m,i  ))**2+&
        &  d2*(-   vp(m,i-3)+ 4*vp(m,i-2)- 5*vp(m,i-1)+ 2*vp(m,i  ))**2+&
        &  d3*(   -vp(m,i-3)+ 3*vp(m,i-2)- 3*vp(m,i-1)+   vp(m,i  ))**2
-!    
+!
        betam(3)= d1*(-11*vm(m,i+1)+18*vm(m,i  )- 9*vm(m,i-1)+ 2*vm(m,i-2))**2+&
        &  d2*(  2*vm(m,i+1)- 5*vm(m,i  )+ 4*vm(m,i-1)-   vm(m,i-2))**2+&
        &  d3*(   -vm(m,i+1)+ 3*vm(m,i  )- 3*vm(m,i-1)+   vm(m,i-2))**2
@@ -2385,8 +2385,8 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
        &  d3*(   -vm(m,i+3)+ 3*vm(m,i+2)- 3*vm(m,i+1)+   vm(m,i  ))**2
        betam(0)= d1*(- 2*vm(m,i+4)+ 9*vm(m,i+3)-18*vm(m,i+2)+11*vm(m,i+1))**2+&
        &  d2*(-   vm(m,i+4)+ 4*vm(m,i+3)- 5*vm(m,i+2)+ 2*vm(m,i+1))**2+&
-       &  d3*(   -vm(m,i+4)+ 3*vm(m,i+3)- 3*vm(m,i+2)+   vm(m,i+1))**2 
-!    
+       &  d3*(   -vm(m,i+4)+ 3*vm(m,i+3)- 3*vm(m,i+2)+   vm(m,i+1))**2
+!
        sump = 0._mykind
        summ = 0._mykind
        do l=0,3
@@ -2399,7 +2399,7 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
         omp(l) = alfp(l)/sump
         omm(l) = alfm(l)/summ
        enddo
-!    
+!
        vminus(m)   = omp(3)*( 6*vp(m,i  )+26*vp(m,i+1)-10*vp(m,i+2)+ 2*vp(m,i+3))+&
         omp(2)*(-2*vp(m,i-1)+14*vp(m,i  )+14*vp(m,i+1)- 2*vp(m,i+2))+&
         omp(1)*( 2*vp(m,i-2)-10*vp(m,i-1)+26*vp(m,i  )+ 6*vp(m,i+1))+&
@@ -2408,12 +2408,12 @@ subroutine wenorec(nvar,vp,vm,vminus,vplus,iweno)
         omm(2)*(-2*vm(m,i+2)+14*vm(m,i+1)+14*vm(m,i  )- 2*vm(m,i-1))+&
         omm(1)*( 2*vm(m,i+3)-10*vm(m,i+2)+26*vm(m,i+1)+ 6*vm(m,i  ))+&
         omm(0)*(-6*vm(m,i+4)+26*vm(m,i+3)-46*vm(m,i+2)+50*vm(m,i+1))
-!    
-      enddo ! end of m-loop 
-!    
+!
+      enddo ! end of m-loop
+!
       vminus = vminus/24._mykind
       vplus  = vplus /24._mykind
-!    
+!
      else
       write(*,*) 'Error! WENO scheme not implemented'
       stop
@@ -2425,7 +2425,7 @@ endsubroutine wenorec
 attributes(device) &
 #endif
 subroutine upwrec(nvar,vp,vm,vminus,vplus,iweno)
-!    
+!
      implicit none
      integer, parameter :: mykind = MYKIND
 !
@@ -2433,25 +2433,25 @@ subroutine upwrec(nvar,vp,vm,vminus,vplus,iweno)
      integer :: nvar, iweno
      real(mykind),dimension(nvar,2*iweno) :: vm,vp
      real(mykind),dimension(nvar) :: vminus,vplus
-!    
+!
 !    Local variables
      real(mykind),dimension(-1:4) :: dwe           ! linear weights
      real(mykind),dimension(-1:4) :: alfp,alfm     ! alpha_l
      real(mykind),dimension(-1:4) :: betap,betam   ! beta_l
      real(mykind),dimension(-1:4) :: omp,omm       ! WENO weights
-!    
+!
      integer :: r,i,j,k,l,m
      real(mykind) :: c0,c1,c2,c3,c4,d0,d1,d2,d3,d4,summ,sump
-!    
+!
      if (iweno==1) then ! Godunov
-!    
+!
       i = iweno ! index of intermediate node to perform reconstruction
-!    
+!
       vminus(1:nvar) = vp(1:nvar,i)
       vplus (1:nvar) = vm(1:nvar,i+1)
-!    
+!
      elseif (iweno==2) then ! WENO-3
-!    
+!
       i = iweno ! index of intermediate node to perform reconstruction
 !
       vminus(1:nvar) =  -1*vp(1:nvar,i-1)+5*vp(1:nvar,i)  +2*vp(1:nvar,i+1)
@@ -2460,18 +2460,18 @@ subroutine upwrec(nvar,vp,vm,vminus,vplus,iweno)
       vplus (1:nvar) = vplus (1:nvar)/6._mykind
 !
      elseif (iweno==3) then ! WENO-5
-!    
+!
       i = iweno ! index of intermediate node to perform reconstruction
 !
       vminus(1:nvar) =  2*vp(1:nvar,i-2)-13*vp(1:nvar,i-1)+47*vp(1:nvar,i)  +27*vp(1:nvar,i+1)-3*vp(1:nvar,i+2)
       vplus (1:nvar) = -3*vm(1:nvar,i-1)+27*vm(1:nvar,i  )+47*vm(1:nvar,i+1)-13*vm(1:nvar,i+2)+2*vm(1:nvar,i+3)
       vminus(1:nvar) = vminus(1:nvar)/60._mykind
       vplus (1:nvar) = vplus (1:nvar)/60._mykind
-!    
+!
 !     elseif (iweno==4) then ! WENO-7
-!!    
+!!
 !      i = iweno ! index of intermediate node to perform reconstruction
-!    
+!
      else
       write(*,*) 'Error! Upwind scheme not implemented'
       stop
